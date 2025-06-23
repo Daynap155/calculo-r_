@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <title>Gráfica de Ecuaciones Lineales y Cuadráticas</title>
+  <title>Calculadora de Funciones</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     body {
@@ -30,8 +30,8 @@
   </style>
 </head>
 <body>
-  <h1>Calculadora de Ecuaciones Lineales y Cuadráticas</h1>
-  <p>Ingresa una función en <code>x</code> (ej: <code>x*x - 4*x + 3</code> o <code>2*x + 1</code>)</p>
+  <h1>Gráfica de Funciones Lineales y Cuadráticas</h1>
+  <p>Ingresa una función de <code>x</code>, como: <code>x*x - 4*x + 3</code> o <code>2*x + 1</code></p>
   <input type="text" id="funcion" placeholder="Ej: x*x - 4*x + 3" />
   <br>
   <button onclick="graficar()">Graficar</button>
@@ -43,22 +43,35 @@
     let chart;
 
     function graficar() {
-      const expr = document.getElementById("funcion").value;
+      const input = document.getElementById("funcion").value;
+      let f;
+
+      try {
+        // Creamos una función dinámica segura
+        f = new Function("x", "return " + input);
+      } catch (e) {
+        document.getElementById("resultado").innerText = "❌ Error en la función. Verifica tu fórmula.";
+        return;
+      }
+
       const xs = [];
       const ys = [];
 
-      // Evaluamos de -20 a 20
       for (let x = -20; x <= 20; x += 0.1) {
         try {
-          let y = eval(expr);
+          const y = f(x);
           if (isFinite(y)) {
             xs.push(parseFloat(x.toFixed(2)));
             ys.push(parseFloat(y.toFixed(2)));
           }
         } catch (e) {
-          document.getElementById("resultado").innerText = "Error en la función.";
-          return;
+          // ignora valores no válidos
         }
+      }
+
+      if (ys.length === 0) {
+        document.getElementById("resultado").innerText = "❌ La función no se pudo graficar.";
+        return;
       }
 
       const minY = Math.min(...ys).toFixed(2);
