@@ -1,121 +1,72 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <title>Calculadora de Funciones</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <meta charset="UTF-8">
+  <title>Dominio y Rango</title>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f0f0f0;
-      padding: 30px;
-      text-align: center;
+      margin: 30px;
     }
     input, button {
-      padding: 10px;
-      font-size: 16px;
-      margin: 10px;
-      width: 300px;
-    }
-    canvas {
-      margin-top: 30px;
-      background: #fff;
-      border: 1px solid #ccc;
+      padding: 8px;
+      margin: 5px;
     }
     #resultado {
       margin-top: 20px;
-      font-weight: bold;
-      font-size: 18px;
     }
   </style>
 </head>
 <body>
-  <h1>Gráfica de Funciones Lineales y Cuadráticas</h1>
-  <p>Ingresa una función de <code>x</code>, como: <code>x*x - 4*x + 3</code> o <code>2*x + 1</code></p>
-  <input type="text" id="funcion" placeholder="Ej: x*x - 4*x + 3" />
-  <br>
+
+  <h2>Calculadora de Dominio y Rango (Visual)</h2>
+
+  <label for="funcion">Ingresa la función (en x):</label>
+  <input type="text" id="funcion" value="Math.sin(x)">
   <button onclick="graficar()">Graficar</button>
 
+  <div id="grafica" style="width: 100%; height: 500px;"></div>
   <div id="resultado"></div>
-  <canvas id="grafico" width="800" height="400"></canvas>
 
   <script>
-    let chart;
-
     function graficar() {
-      const input = document.getElementById("funcion").value;
-      let f;
+      const fxStr = document.getElementById("funcion").value;
+      let x = [];
+      let y = [];
+      let minY = Infinity;
+      let maxY = -Infinity;
 
-      try {
-        // Creamos una función dinámica segura
-        f = new Function("x", "return " + input);
-      } catch (e) {
-        document.getElementById("resultado").innerText = "❌ Error en la función. Verifica tu fórmula.";
-        return;
-      }
-
-      const xs = [];
-      const ys = [];
-
-      for (let x = -20; x <= 20; x += 0.1) {
+      for (let i = -20; i <= 20; i += 0.1) {
         try {
-          const y = f(x);
-          if (isFinite(y)) {
-            xs.push(parseFloat(x.toFixed(2)));
-            ys.push(parseFloat(y.toFixed(2)));
+          const val = eval(fxStr.replace(/x/g, (${i})));
+          if (isFinite(val)) {
+            x.push(i);
+            y.push(val);
+            if (val < minY) minY = val;
+            if (val > maxY) maxY = val;
           }
         } catch (e) {
-          // ignora valores no válidos
+          continue;
         }
       }
 
-      if (ys.length === 0) {
-        document.getElementById("resultado").innerText = "❌ La función no se pudo graficar.";
-        return;
-      }
-
-      const minY = Math.min(...ys).toFixed(2);
-      const maxY = Math.max(...ys).toFixed(2);
-
-      document.getElementById("resultado").innerHTML = `
-        🌐 <strong>Dominio:</strong> [-20, 20]<br>
-        📈 <strong>Rango aproximado:</strong> [${minY}, ${maxY}]
-      `;
-
-      if (chart) chart.destroy();
-
-      const ctx = document.getElementById("grafico").getContext("2d");
-      chart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: xs,
-          datasets: [{
-            label: 'f(x)',
-            data: ys,
-            borderColor: 'blue',
-            fill: false,
-            pointRadius: 0
-          }]
-        },
-        options: {
-          responsive: true,
-          scales: {
-            x: {
-              title: {
-                display: true,
-                text: 'x'
-              }
-            },
-            y: {
-              title: {
-                display: true,
-                text: 'f(x)'
-              }
-            }
-          }
-        }
+      Plotly.newPlot('grafica', [{
+        x: x,
+        y: y,
+        mode: 'lines',
+        name: fxStr
+      }], {
+        title: 'Gráfica de la función',
+        xaxis: { title: 'x', range: [-20, 20] },
+        yaxis: { title: 'f(x)' }
       });
+
+      document.getElementById("resultado").innerHTML =
+        `<strong>Dominio:</strong> de -20 a 20 (aproximado)<br>
+         <strong>Rango:</strong> de ${minY.toFixed(2)} a ${maxY.toFixed(2)} (estimado visualmente)`;
     }
   </script>
+
 </body>
 </html>
