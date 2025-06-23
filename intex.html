@@ -1,72 +1,619 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Dominio y Rango</title>
-  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 30px;
-    }
-    input, button {
-      padding: 8px;
-      margin: 5px;
-    }
-    #resultado {
-      margin-top: 20px;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solucionador de Ecuaciones</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.26.0/plotly.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+            padding: 30px;
+        }
+        
+        .controls {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .equation-type {
+            margin-bottom: 25px;
+        }
+        
+        .equation-type h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .radio-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            padding: 10px 15px;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+            background: white;
+            border: 2px solid #e9ecef;
+        }
+        
+        .radio-option:hover {
+            background: #e3f2fd;
+            border-color: #2196f3;
+        }
+        
+        .radio-option input[type="radio"]:checked + label {
+            color: #2196f3;
+            font-weight: bold;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #34495e;
+            font-weight: 600;
+        }
+        
+        .input-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+        
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .results {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        
+        .results h4 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        
+        .result-item {
+            background: white;
+            padding: 10px 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #4facfe;
+        }
+        
+        .graph-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        
+        #plot {
+            width: 100%;
+            height: 600px;
+        }
+        
+        .domain-range-info {
+            background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            color: #2c3e50;
+        }
+        
+        .domain-range-info h4 {
+            margin-bottom: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .content {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
 </head>
 <body>
+    <div class="container">
+        <div class="header">
+            <h1>🧮 Solucionador de Ecuaciones</h1>
+            <p>Resuelve ecuaciones lineales y cuadráticas con visualización gráfica</p>
+        </div>
+        
+        <div class="content">
+            <div class="controls">
+                <div class="equation-type">
+                    <h3>Tipo de Ecuación</h3>
+                    <div class="radio-group">
+                        <div class="radio-option">
+                            <input type="radio" id="linear" name="type" value="linear" checked>
+                            <label for="linear">Lineal</label>
+                        </div>
+                        <div class="radio-option">
+                            <input type="radio" id="quadratic" name="type" value="quadratic">
+                            <label for="quadratic">Cuadrática</label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div id="linearInputs">
+                    <h4>Ecuación Lineal: ax + b = 0</h4>
+                    <div class="input-group">
+                        <label for="a_linear">Coeficiente a:</label>
+                        <input type="number" id="a_linear" value="2" step="any">
+                    </div>
+                    <div class="input-group">
+                        <label for="b_linear">Coeficiente b:</label>
+                        <input type="number" id="b_linear" value="3" step="any">
+                    </div>
+                </div>
+                
+                <div id="quadraticInputs" style="display: none;">
+                    <h4>Ecuación Cuadrática: ax² + bx + c = 0</h4>
+                    <div class="input-group">
+                        <label for="a_quad">Coeficiente a:</label>
+                        <input type="number" id="a_quad" value="1" step="any">
+                    </div>
+                    <div class="input-group">
+                        <label for="b_quad">Coeficiente b:</label>
+                        <input type="number" id="b_quad" value="-4" step="any">
+                    </div>
+                    <div class="input-group">
+                        <label for="c_quad">Coeficiente c:</label>
+                        <input type="number" id="c_quad" value="3" step="any">
+                    </div>
+                </div>
+                
+                <button class="btn" onclick="solveEquation()">🔍 Resolver Ecuación</button>
+                
+                <div id="results" class="results" style="display: none;">
+                    <h4>📊 Resultados</h4>
+                    <div id="solutionText"></div>
+                </div>
+                
+                <div id="domainRangeInfo" class="domain-range-info" style="display: none;">
+                    <h4>📐 Dominio y Rango</h4>
+                    <div id="domainRangeText"></div>
+                </div>
+            </div>
+            
+            <div class="graph-container">
+                <div id="plot"></div>
+            </div>
+        </div>
+    </div>
 
-  <h2>Calculadora de Dominio y Rango (Visual)</h2>
-
-  <label for="funcion">Ingresa la función (en x):</label>
-  <input type="text" id="funcion" value="Math.sin(x)">
-  <button onclick="graficar()">Graficar</button>
-
-  <div id="grafica" style="width: 100%; height: 500px;"></div>
-  <div id="resultado"></div>
-
-  <script>
-    function graficar() {
-      const fxStr = document.getElementById("funcion").value;
-      let x = [];
-      let y = [];
-      let minY = Infinity;
-      let maxY = -Infinity;
-
-      for (let i = -20; i <= 20; i += 0.1) {
-        try {
-          const val = eval(fxStr.replace(/x/g, (${i})));
-          if (isFinite(val)) {
-            x.push(i);
-            y.push(val);
-            if (val < minY) minY = val;
-            if (val > maxY) maxY = val;
-          }
-        } catch (e) {
-          continue;
+    <script>
+        // Event listeners para cambiar tipo de ecuación
+        document.querySelectorAll('input[name="type"]').forEach(radio => {
+            radio.addEventListener('change', function() {
+                const linearInputs = document.getElementById('linearInputs');
+                const quadraticInputs = document.getElementById('quadraticInputs');
+                
+                if (this.value === 'linear') {
+                    linearInputs.style.display = 'block';
+                    quadraticInputs.style.display = 'none';
+                } else {
+                    linearInputs.style.display = 'none';
+                    quadraticInputs.style.display = 'block';
+                }
+                
+                // Resolver automáticamente cuando se cambia el tipo
+                setTimeout(solveEquation, 100);
+            });
+        });
+        
+        // Event listeners para actualizar gráfica automáticamente
+        document.querySelectorAll('input[type="number"]').forEach(input => {
+            input.addEventListener('input', function() {
+                setTimeout(solveEquation, 300);
+            });
+        });
+        
+        function solveEquation() {
+            const type = document.querySelector('input[name="type"]:checked').value;
+            
+            if (type === 'linear') {
+                solveLinear();
+            } else {
+                solveQuadratic();
+            }
         }
-      }
-
-      Plotly.newPlot('grafica', [{
-        x: x,
-        y: y,
-        mode: 'lines',
-        name: fxStr
-      }], {
-        title: 'Gráfica de la función',
-        xaxis: { title: 'x', range: [-20, 20] },
-        yaxis: { title: 'f(x)' }
-      });
-
-      document.getElementById("resultado").innerHTML =
-        `<strong>Dominio:</strong> de -20 a 20 (aproximado)<br>
-         <strong>Rango:</strong> de ${minY.toFixed(2)} a ${maxY.toFixed(2)} (estimado visualmente)`;
-    }
-  </script>
-
+        
+        function solveLinear() {
+            const a = parseFloat(document.getElementById('a_linear').value) || 0;
+            const b = parseFloat(document.getElementById('b_linear').value) || 0;
+            
+            const results = document.getElementById('results');
+            const solutionText = document.getElementById('solutionText');
+            const domainRangeInfo = document.getElementById('domainRangeInfo');
+            const domainRangeText = document.getElementById('domainRangeText');
+            
+            results.style.display = 'block';
+            domainRangeInfo.style.display = 'block';
+            
+            let solutionHTML = '';
+            
+            if (a === 0) {
+                if (b === 0) {
+                    solutionHTML = '<div class="result-item">🟢 Identidad: infinitas soluciones</div>';
+                } else {
+                    solutionHTML = '<div class="result-item">🔴 Inconsistente: sin solución</div>';
+                }
+            } else {
+                const x = -b / a;
+                solutionHTML = `
+                    <div class="result-item"><strong>Ecuación:</strong> ${a}x + ${b} = 0</div>
+                    <div class="result-item"><strong>Solución:</strong> x = ${x.toFixed(4)}</div>
+                    <div class="result-item"><strong>Verificación:</strong> ${a}(${x.toFixed(4)}) + ${b} = ${(a * x + b).toFixed(6)}</div>
+                `;
+            }
+            
+            solutionText.innerHTML = solutionHTML;
+            
+            // Información de dominio y rango para función lineal
+            domainRangeText.innerHTML = `
+                <div><strong>Función:</strong> f(x) = ${a}x + ${b}</div>
+                <div><strong>Dominio:</strong> ℝ (todos los números reales)</div>
+                <div><strong>Rango:</strong> ℝ (todos los números reales)</div>
+                <div><strong>Pendiente:</strong> ${a}</div>
+                <div><strong>Intercepto y:</strong> ${b}</div>
+            `;
+            
+            plotLinear(a, b);
+        }
+        
+        function solveQuadratic() {
+            const a = parseFloat(document.getElementById('a_quad').value) || 1;
+            const b = parseFloat(document.getElementById('b_quad').value) || 0;
+            const c = parseFloat(document.getElementById('c_quad').value) || 0;
+            
+            const results = document.getElementById('results');
+            const solutionText = document.getElementById('solutionText');
+            const domainRangeInfo = document.getElementById('domainRangeInfo');
+            const domainRangeText = document.getElementById('domainRangeText');
+            
+            results.style.display = 'block';
+            domainRangeInfo.style.display = 'block';
+            
+            if (a === 0) {
+                // Es una ecuación lineal
+                solveLinear();
+                return;
+            }
+            
+            const discriminant = b * b - 4 * a * c;
+            const vertex_x = -b / (2 * a);
+            const vertex_y = a * vertex_x * vertex_x + b * vertex_x + c;
+            
+            let solutionHTML = `
+                <div class="result-item"><strong>Ecuación:</strong> ${a}x² + ${b}x + ${c} = 0</div>
+                <div class="result-item"><strong>Discriminante:</strong> Δ = ${discriminant.toFixed(4)}</div>
+                <div class="result-item"><strong>Vértice:</strong> (${vertex_x.toFixed(4)}, ${vertex_y.toFixed(4)})</div>
+            `;
+            
+            if (discriminant > 0) {
+                const x1 = (-b + Math.sqrt(discriminant)) / (2 * a);
+                const x2 = (-b - Math.sqrt(discriminant)) / (2 * a);
+                solutionHTML += `
+                    <div class="result-item"><strong>Soluciones:</strong></div>
+                    <div class="result-item">x₁ = ${x1.toFixed(4)}</div>
+                    <div class="result-item">x₂ = ${x2.toFixed(4)}</div>
+                `;
+            } else if (discriminant === 0) {
+                const x = -b / (2 * a);
+                solutionHTML += `<div class="result-item"><strong>Solución única:</strong> x = ${x.toFixed(4)}</div>`;
+            } else {
+                const realPart = -b / (2 * a);
+                const imagPart = Math.sqrt(-discriminant) / (2 * a);
+                solutionHTML += `
+                    <div class="result-item"><strong>Soluciones complejas:</strong></div>
+                    <div class="result-item">x₁ = ${realPart.toFixed(4)} + ${imagPart.toFixed(4)}i</div>
+                    <div class="result-item">x₂ = ${realPart.toFixed(4)} - ${imagPart.toFixed(4)}i</div>
+                `;
+            }
+            
+            solutionText.innerHTML = solutionHTML;
+            
+            // Información de dominio y rango para función cuadrática
+            const opens = a > 0 ? 'hacia arriba' : 'hacia abajo';
+            const rangeText = a > 0 ? `[${vertex_y.toFixed(4)}, +∞)` : `(-∞, ${vertex_y.toFixed(4)}]`;
+            
+            domainRangeText.innerHTML = `
+                <div><strong>Función:</strong> f(x) = ${a}x² + ${b}x + ${c}</div>
+                <div><strong>Dominio:</strong> ℝ (todos los números reales)</div>
+                <div><strong>Rango:</strong> ${rangeText}</div>
+                <div><strong>Parábola:</strong> Abre ${opens}</div>
+                <div><strong>Eje de simetría:</strong> x = ${vertex_x.toFixed(4)}</div>
+                <div><strong>Intercepto y:</strong> ${c}</div>
+            `;
+            
+            plotQuadratic(a, b, c);
+        }
+        
+        function plotLinear(a, b) {
+            const x = [];
+            const y = [];
+            
+            for (let i = -20; i <= 20; i += 0.5) {
+                x.push(i);
+                y.push(a * i + b);
+            }
+            
+            const trace = {
+                x: x,
+                y: y,
+                type: 'scatter',
+                mode: 'lines',
+                name: `f(x) = ${a}x + ${b}`,
+                line: {
+                    color: '#667eea',
+                    width: 3
+                }
+            };
+            
+            // Punto de intersección con x (si existe)
+            const traces = [trace];
+            if (a !== 0) {
+                const root = -b / a;
+                if (root >= -20 && root <= 20) {
+                    traces.push({
+                        x: [root],
+                        y: [0],
+                        type: 'scatter',
+                        mode: 'markers',
+                        name: `Raíz: (${root.toFixed(2)}, 0)`,
+                        marker: {
+                            color: '#ff6b6b',
+                            size: 12,
+                            symbol: 'circle'
+                        }
+                    });
+                }
+            }
+            
+            // Intercepto y
+            if (b >= -20 && b <= 20) {
+                traces.push({
+                    x: [0],
+                    y: [b],
+                    type: 'scatter',
+                    mode: 'markers',
+                    name: `Intercepto y: (0, ${b})`,
+                    marker: {
+                        color: '#4ecdc4',
+                        size: 12,
+                        symbol: 'square'
+                    }
+                });
+            }
+            
+            const layout = {
+                title: 'Función Lineal',
+                xaxis: {
+                    title: 'x',
+                    range: [-20, 20],
+                    zeroline: true,
+                    gridcolor: '#e9ecef'
+                },
+                yaxis: {
+                    title: 'y',
+                    range: [-20, 20],
+                    zeroline: true,
+                    gridcolor: '#e9ecef'
+                },
+                plot_bgcolor: '#f8f9fa',
+                paper_bgcolor: 'white',
+                showlegend: true,
+                legend: {
+                    x: 0.02,
+                    y: 0.98
+                }
+            };
+            
+            Plotly.newPlot('plot', traces, layout, {responsive: true});
+        }
+        
+        function plotQuadratic(a, b, c) {
+            const x = [];
+            const y = [];
+            
+            for (let i = -20; i <= 20; i += 0.2) {
+                x.push(i);
+                y.push(a * i * i + b * i + c);
+            }
+            
+            const trace = {
+                x: x,
+                y: y,
+                type: 'scatter',
+                mode: 'lines',
+                name: `f(x) = ${a}x² + ${b}x + ${c}`,
+                line: {
+                    color: '#764ba2',
+                    width: 3
+                }
+            };
+            
+            const traces = [trace];
+            
+            // Vértice
+            const vertex_x = -b / (2 * a);
+            const vertex_y = a * vertex_x * vertex_x + b * vertex_x + c;
+            
+            traces.push({
+                x: [vertex_x],
+                y: [vertex_y],
+                type: 'scatter',
+                mode: 'markers',
+                name: `Vértice: (${vertex_x.toFixed(2)}, ${vertex_y.toFixed(2)})`,
+                marker: {
+                    color: '#ff9a9e',
+                    size: 15,
+                    symbol: 'diamond'
+                }
+            });
+            
+            // Raíces (si son reales y están en el rango)
+            const discriminant = b * b - 4 * a * c;
+            if (discriminant >= 0) {
+                const x1 = (-b + Math.sqrt(discriminant)) / (2 * a);
+                const x2 = (-b - Math.sqrt(discriminant)) / (2 * a);
+                
+                if (x1 >= -20 && x1 <= 20) {
+                    traces.push({
+                        x: [x1],
+                        y: [0],
+                        type: 'scatter',
+                        mode: 'markers',
+                        name: `Raíz 1: (${x1.toFixed(2)}, 0)`,
+                        marker: {
+                            color: '#ff6b6b',
+                            size: 12,
+                            symbol: 'circle'
+                        }
+                    });
+                }
+                
+                if (x2 >= -20 && x2 <= 20 && Math.abs(x2 - x1) > 0.01) {
+                    traces.push({
+                        x: [x2],
+                        y: [0],
+                        type: 'scatter',
+                        mode: 'markers',
+                        name: `Raíz 2: (${x2.toFixed(2)}, 0)`,
+                        marker: {
+                            color: '#ff6b6b',
+                            size: 12,
+                            symbol: 'circle'
+                        }
+                    });
+                }
+            }
+            
+            // Intercepto y
+            traces.push({
+                x: [0],
+                y: [c],
+                type: 'scatter',
+                mode: 'markers',
+                name: `Intercepto y: (0, ${c})`,
+                marker: {
+                    color: '#4ecdc4',
+                    size: 12,
+                    symbol: 'square'
+                }
+            });
+            
+            const layout = {
+                title: 'Función Cuadrática',
+                xaxis: {
+                    title: 'x',
+                    range: [-20, 20],
+                    zeroline: true,
+                    gridcolor: '#e9ecef'
+                },
+                yaxis: {
+                    title: 'y',
+                    range: [-20, 20],
+                    zeroline: true,
+                    gridcolor: '#e9ecef'
+                },
+                plot_bgcolor: '#f8f9fa',
+                paper_bgcolor: 'white',
+                showlegend: true,
+                legend: {
+                    x: 0.02,
+                    y: 0.98
+                }
+            };
+            
+            Plotly.newPlot('plot', traces, layout, {responsive: true});
+        }
+        
+        // Inicializar con una ecuación lineal
+        solveEquation();
+    </script>
 </body>
 </html>
