@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Gráfica de Ecuaciones Lineales y Cuadráticas</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f0f0;
+      padding: 30px;
+      text-align: center;
+    }
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+      margin: 10px;
+      width: 300px;
+    }
+    canvas {
+      margin-top: 30px;
+      background: #fff;
+      border: 1px solid #ccc;
+    }
+    #resultado {
+      margin-top: 20px;
+      font-weight: bold;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Calculadora de Ecuaciones Lineales y Cuadráticas</h1>
+  <p>Ingresa una función en <code>x</code> (ej: <code>x*x - 4*x + 3</code> o <code>2*x + 1</code>)</p>
+  <input type="text" id="funcion" placeholder="Ej: x*x - 4*x + 3" />
+  <br>
+  <button onclick="graficar()">Graficar</button>
+
+  <div id="resultado"></div>
+  <canvas id="grafico" width="800" height="400"></canvas>
+
+  <script>
+    let chart;
+
+    function graficar() {
+      const expr = document.getElementById("funcion").value;
+      const xs = [];
+      const ys = [];
+
+      // Evaluamos de -20 a 20
+      for (let x = -20; x <= 20; x += 0.1) {
+        try {
+          let y = eval(expr);
+          if (isFinite(y)) {
+            xs.push(parseFloat(x.toFixed(2)));
+            ys.push(parseFloat(y.toFixed(2)));
+          }
+        } catch (e) {
+          document.getElementById("resultado").innerText = "Error en la función.";
+          return;
+        }
+      }
+
+      const minY = Math.min(...ys).toFixed(2);
+      const maxY = Math.max(...ys).toFixed(2);
+
+      document.getElementById("resultado").innerHTML = `
+        🌐 <strong>Dominio:</strong> [-20, 20]<br>
+        📈 <strong>Rango aproximado:</strong> [${minY}, ${maxY}]
+      `;
+
+      if (chart) chart.destroy();
+
+      const ctx = document.getElementById("grafico").getContext("2d");
+      chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: xs,
+          datasets: [{
+            label: 'f(x)',
+            data: ys,
+            borderColor: 'blue',
+            fill: false,
+            pointRadius: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            x: {
+              title: {
+                display: true,
+                text: 'x'
+              }
+            },
+            y: {
+              title: {
+                display: true,
+                text: 'f(x)'
+              }
+            }
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
